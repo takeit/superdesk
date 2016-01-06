@@ -1,8 +1,4 @@
-define([
-    'angular',
-    'd3',
-    'moment',
-], function(angular, d3, moment) {
+(function() {
     'use strict';
 
     var modulePath = 'scripts/superdesk-ingest-whatsapp';
@@ -104,4 +100,4 @@ define([
 
     return app;
 
-});
+})();
