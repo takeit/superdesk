@@ -8,10 +8,11 @@
     ]);
 
     app.run(['feedingServices', function(providerTypes) {
-        providerTypes.whatsapp = {
+        providerTypes.push({
+            value: 'whatsapp',
             label: 'WhatsApp',
             templateUrl: modulePath + '/views/whatsappConfig.html'
-        };
+        });
     }]);
 
     app.directive('sdWhatsappRegistration', ['api', 'notify', 'gettext',
