@@ -282,6 +282,7 @@ INSTALLED_APPS.extend([
     'apps.search_providers.aap_mm',
 
     'apps.superdesk_whatsapp',
+    'apps.superdesk_hook_receiver',
 ])
 
 RESOURCE_METHODS = ['GET', 'POST']
