@@ -8,7 +8,7 @@
 # AUTHORS and LICENSE files distributed with this source code, or
 # at https://www.sourcefabric.org/superdesk/license
 
-"""Whatsapp io service."""
+"""WebHook io service."""
 
 import logging
 
@@ -18,8 +18,6 @@ from superdesk.utc import utcnow
 from superdesk.errors import IngestApiError
 from superdesk.metadata.item import ITEM_TYPE, CONTENT_TYPE, GUID_TAG
 from superdesk.metadata.utils import generate_guid
-
-from .whatsapp_collector import collect_messages
 
 
 logger = logging.getLogger(__name__)
@@ -32,10 +30,10 @@ def set_item_defaults(item):
     item['subject'] = [{'qcode': '01000000', 'name': 'arts, culture and entertainment'}]
 
 
-class WhatsappFeedingService(FeedingService):
-    """Whatsapp ingest service."""
+class WebHookFeedingService(FeedingService):
+    """WebHook ingest service."""
 
-    NAME = 'whatsapp'
+    NAME = 'webhook'
 
     ERRORS = [IngestApiError.apiTimeoutError().get_error_description(),
               IngestApiError.apiRedirectError().get_error_description(),
@@ -93,7 +91,7 @@ class WhatsappFeedingService(FeedingService):
         return [items]
 
 register_feeding_service(
-    WhatsappFeedingService.NAME,
-    WhatsappFeedingService(),
-    WhatsappFeedingService.ERRORS
+    WebHookFeedingService.NAME,
+    WebHookFeedingService(),
+    WebHookFeedingService.ERRORS
 )

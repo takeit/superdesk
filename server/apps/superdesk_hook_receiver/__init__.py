@@ -15,10 +15,15 @@ from eve.utils import config
 from superdesk.errors import SuperdeskApiError
 from superdesk.resource import Resource
 from superdesk.services import BaseService
+from superdesk import get_resource_service
 from flask import url_for, request, current_app as app
 from superdesk.media.renditions import generate_renditions, delete_file_on_error
-from superdesk.media.media_operations import download_file_from_url, process_file_from_stream, \
+from superdesk.media.media_operations import (
+    download_file_from_url, process_file_from_stream,
     crop_image, decode_metadata, download_file_from_encoded_str
+)
+
+from . import feeding_provider  # NOQA
 
 
 bp = superdesk.Blueprint('hook_receiver_raw', __name__)
@@ -26,24 +31,30 @@ superdesk.blueprint(bp)
 logger = logging.getLogger(__name__)
 
 
+# @TODO: leave this
 @bp.route('/hook_receiver/<path:hook_id>', methods=['GET', 'POST'])
 def get_hook_receiver_as_data_uri(hook_id):
-    logger.critical(hook_id)
-    logger.critical(dir(request))
-    # GET
-    logger.critical(list(request.form.items()))
-    # POST
-    logger.critical(request.json)
+    data = request.json
+    if not data:
+        data = list(request.form.items())
 
-    media_file = True  # app.media.get(hook_id, 'hook_receiver')
-    if media_file:
-        data = 'OK'
+    # logger.critical(dir(request))
+    logger.critical(hook_id)
+    logger.critical(data)
+    logger.critical([
+        (item["_id"], item["source"]) for item in
+        get_resource_service("ingest_providers").get(req=None, lookup={})
+    ])
+
+    ingest_provider = get_resource_service("ingest_providers").find_one(req=None, _id=hook_id)
+    if ingest_provider:
+        data = '{"_status": "OK"}'
         response = app.response_class(
             data,
             direct_passthrough=True)
         response.make_conditional(request)
         return response
-    raise SuperdeskApiError.notFoundError('File not found on media storage.')
+    raise SuperdeskApiError.notFoundError('Hook is not registered.')
 
 
 def url_for_media(media_id):
@@ -55,12 +66,14 @@ def hook_receiver_url(media_id):
                    _external=True, _schema=app.config.get('URL_PROTOCOL'))
 
 
+# @TODO: leave this
 def init_app(app):
     endpoint_name = 'hook_receiver'
     service = HookReceiverService(endpoint_name, backend=superdesk.get_backend())
     HookReceiverResource(endpoint_name, app=app, service=service)
 
 
+# @TODO: change this
 class HookReceiverResource(Resource):
     schema = {
         'media': {'type': 'file'},
@@ -89,6 +102,7 @@ class HookReceiverResource(Resource):
     privileges = {'POST': 'ingest', 'DELETE': 'ingest'}
 
 
+# @TODO: change this
 class HookReceiverService(BaseService):
 
     def on_create(self, docs):
