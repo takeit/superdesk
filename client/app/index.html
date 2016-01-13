@@ -210,6 +210,7 @@
     <script src="scripts/superdesk-search-providers/module.js"></script>
 
     <script src="scripts/superdesk-ingest-whatsapp/module.js"></script>
+    <script src="scripts/superdesk-feed-webhook/module.js"></script>
     <!-- endbuild -->
 
     <!-- build:js scripts/main.js -->
@@ -251,7 +252,8 @@
             'superdesk.loading',
             'superdesk.templates-cache',
 
-            'superdesk.ingest.whatsapp'
+            'superdesk.ingest.whatsapp',
+            'superdesk.feed.webhook',
         ];
         window.bootstrapSuperdesk(config, modules);
     </script>
