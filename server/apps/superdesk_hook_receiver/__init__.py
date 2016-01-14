@@ -41,20 +41,28 @@ def get_hook_receiver_as_data_uri(hook_id):
     # logger.critical(dir(request))
     logger.critical(hook_id)
     logger.critical(data)
+    """
     logger.critical([
         (item["_id"], item["source"]) for item in
         get_resource_service("ingest_providers").get(req=None, lookup={})
     ])
+    """
+    logger.critical(list(
+        get_resource_service("ingest_providers").get(req=None, lookup={})
+    ))
 
-    ingest_provider = get_resource_service("ingest_providers").find_one(req=None, _id=hook_id)
-    if ingest_provider:
-        data = '{"_status": "OK"}'
-        response = app.response_class(
-            data,
-            direct_passthrough=True)
-        response.make_conditional(request)
-        return response
-    raise SuperdeskApiError.notFoundError('Hook is not registered.')
+    ingest_provider = get_resource_service("ingest_providers").find_one(
+        req=None, _id=hook_id, feeding_service='webhook'
+    )
+    if not ingest_provider:
+        raise SuperdeskApiError.notFoundError('Hook is not registered.')
+
+    data = '{"_status": "OK"}'
+    response = app.response_class(
+        data,
+        direct_passthrough=True)
+    response.make_conditional(request)
+    return response
 
 
 def url_for_media(media_id):
@@ -69,7 +77,8 @@ def hook_receiver_url(media_id):
 # @TODO: leave this
 def init_app(app):
     endpoint_name = 'hook_receiver'
-    service = HookReceiverService(endpoint_name, backend=superdesk.get_backend())
+    service = HookReceiverService(
+        endpoint_name, backend=superdesk.get_backend())
     HookReceiverResource(endpoint_name, app=app, service=service)
 
 
@@ -125,13 +134,16 @@ class HookReceiverService(BaseService):
 
     def crop_and_store_file(self, doc, content, filename, content_type):
         # retrieve file name and metadata from file
-        file_name, content_type, metadata = process_file_from_stream(content, content_type=content_type)
+        file_name, content_type, metadata = process_file_from_stream(
+            content, content_type=content_type)
         # crop the file if needed, can change the image size
         was_cropped, out = crop_image(content, filename, doc)
         # the length in metadata could be updated if it was cropped
         if was_cropped:
-            file_name, content_type, metadata_after_cropped = process_file_from_stream(out, content_type=content_type)
-            # when cropped, metadata are reseted. Then we update the previous metadata variable
+            file_name, content_type, metadata_after_cropped = process_file_from_stream(
+                out, content_type=content_type)
+            # when cropped, metadata are reseted. Then we update the previous
+            # metadata variable
             metadata['length'] = metadata_after_cropped['length']
         try:
             logger.debug('Going to save media file with %s ' % file_name)
@@ -151,7 +163,8 @@ class HookReceiverService(BaseService):
             logger.exception(io)
             for file_id in inserted:
                 delete_file_on_error(doc, file_id)
-            raise SuperdeskApiError.internalError('Generating renditions failed')
+            raise SuperdeskApiError.internalError(
+                'Generating renditions failed')
 
     def download_file(self, doc):
         url = doc.get('URL')
