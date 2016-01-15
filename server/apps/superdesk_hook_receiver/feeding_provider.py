@@ -10,24 +10,9 @@
 
 """WebHook io service."""
 
-import logging
-
 from superdesk.io import register_feeding_service
 from superdesk.io.feeding_services import FeedingService
-from superdesk.utc import utcnow
 from superdesk.errors import IngestApiError
-from superdesk.metadata.item import ITEM_TYPE, CONTENT_TYPE, GUID_TAG
-from superdesk.metadata.utils import generate_guid
-
-
-logger = logging.getLogger(__name__)
-
-
-def set_item_defaults(item):
-    item['urgency'] = 5
-    item['pubstatus'] = 'usable'
-    item['anpa_category'] = [{'qcode': 'e'}]
-    item['subject'] = [{'qcode': '01000000', 'name': 'arts, culture and entertainment'}]
 
 
 class WebHookFeedingService(FeedingService):
@@ -53,42 +38,7 @@ class WebHookFeedingService(FeedingService):
     def _update(self, provider):
         """Service update call."""
 
-        config = provider.get('config', {})
-        phone = config.get('phone', None)
-        password = config.get('password', None)
-        if not phone or not password:
-            raise Exception('Credentials are missing')
-
-        messages = collect_messages(phone, password)
-
-        updated = utcnow()
-
-        items = []
-
-        for message in messages:
-            item = {}
-            set_item_defaults(item)
-            item['guid'] = generate_guid(type=GUID_TAG)
-            item['versioncreated'] = updated
-
-            item['original_source'] = message['from']
-            item['firstcreated'] = message['timestamp']
-            item['headline'] = message.get('body', None)
-
-            if message['type'] == 'image':
-                item[ITEM_TYPE] = CONTENT_TYPE.PICTURE
-                item['renditions'] = {
-                    'baseImage': {
-                        'href': message['url']
-                    }
-                }
-            else:
-                item[ITEM_TYPE] = CONTENT_TYPE.TEXT
-                item['body_html'] = message.get('body', None)
-
-            items.append(item)
-
-        return [items]
+        pass
 
 register_feeding_service(
     WebHookFeedingService.NAME,
