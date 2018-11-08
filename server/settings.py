@@ -30,6 +30,8 @@ init_data = Path(ABS_PATH) / 'data'
 if init_data.exists():
     INIT_DATA_PATH = init_data
 
+INSTALLED_APPS = ['planning']
+
 RENDITIONS = {
     'picture': {
         'thumbnail': {'width': 220, 'height': 120},

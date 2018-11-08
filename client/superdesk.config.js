@@ -6,12 +6,7 @@
  */
 module.exports = function(grunt) {
     return {
-        apps: [
-            'superdesk-publisher'
-        ],
-        importApps: [
-            'superdesk-publisher'
-        ],
+        apps: ['superdesk-planning', 'superdesk-publisher'],
         defaultRoute: '/workspace/personal',
         validatorMediaMetadata: {
             headline: {
@@ -57,8 +52,17 @@ module.exports = function(grunt) {
             editor3: true,
             editorHighlights: true
         },
+
         workspace: {
-            analytics: true
+            planning: true,
+            assignments: true
+        },
+
+        publisher: {
+            protocol: 'https',
+            tenant: process.env.PUBLISHER_API_SUBDOMAIN || '',
+            domain: process.env.PUBLISHER_API_DOMAIN || 'localhost',
+            base: 'api/v1'
         }
     };
 };
